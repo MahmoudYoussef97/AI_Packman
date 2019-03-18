@@ -56,7 +56,10 @@ class SearchProblem:
      """
      util.raiseNotDefined()
            
-
+class Node:
+    def __init__(self, route, cost):
+        self.route = route
+        self.cost = cost
 def tinyMazeSearch(problem):
   """
   Returns a sequence of moves that solves tinyMaze.  For any other
@@ -66,44 +69,6 @@ def tinyMazeSearch(problem):
   s = Directions.SOUTH
   w = Directions.WEST
   return  [s,s,w,s,w,w,s,w]
-def graphSearchWithoutCosts(problem, fringe):
-
-    # Dict to track who is the parent of each node
-    # parent[node1] = node2 means that the parent of node1 is node2
-    parent = dict()
-    # Set of closed states (states that have already been visited)
-    closed = set()
-
-    # Insert starting node into the fringe
-    # Note that a node is a tuple consisting of a state, an action and a cost
-    # node[0] = state, node[1] = action, node[2] = cost
-    start_state = problem.getStartState()
-    start_action = None
-    start_cost = 0
-    start_node = (start_state, start_action, start_cost)
-    fringe.push(start_node)
-
-    while not fringe.isEmpty():
-        node = fringe.pop()
-        state = node[0]
-
-        if problem.isGoalState(state): return buildActions(node, parent)
-
-        if state not in closed:
-            closed.add(state)
-
-            for successor in problem.getSuccessors(state):
-                successor_state = successor[0]
-
-                if successor_state not in closed:
-                    fringe.push(successor)
-                    parent[successor] = node
-
-    return []
-def buildActions(node, parent):
-    action = node[1]
-    if action is None: return []
-    return buildActions(parent[node], parent) + [action]
 
 def depthFirstSearch(problem):
   """
@@ -122,7 +87,44 @@ def depthFirstSearch(problem):
   print "Start's successors:", problem.getSuccessors(problem.getStartState())
   """
   "*** YOUR CODE HERE ***"
-  return graphSearchWithoutCosts(problem, util.Stack())
+  print("Start:", problem.getStartState())
+  print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+  print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+
+  explored = []
+  fringe = util.Stack() #define the fringe as a Stack. You can check util.py
+  fringe.push([(problem.getStartState(), "Stop", 0)]) # adding the first node into the fringe
+  #please note that each node is represented using the path from the starting node to the it
+  while not fringe.isEmpty():
+      # print ("fringe: ", fringe.heap)
+      path = fringe.pop() # pop a node from the fringe
+      # print "path len: ", len(path)
+      # print "path: ", path
+
+      s = path[len(path) - 1]
+      s = s[0]
+      # print "s: ", s
+      if problem.isGoalState(s):
+          # print "FOUND SOLUTION: ", [x[1] for x in path]
+          return [x[1] for x in path][1:]
+
+      if s not in explored:
+          explored.append(s) # append the state to explored
+          # print "EXPLORING: ", s
+
+          for successor in problem.getSuccessors(s):
+              # print "SUCCESSOR: ", successor
+              if successor[0] not in explored:
+                  successorPath = path[:]
+                  successorPath.append(successor)
+                  # print "successorPath: ", successorPath
+                  fringe.push(successorPath) # push the sucessorPath into fringe
+          # else:
+          # print successor[0], " IS ALREADY EXPLORED!!"
+
+  return []
+
+  util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
   """
@@ -130,12 +132,67 @@ def breadthFirstSearch(problem):
   [2nd Edition: p 73, 3rd Edition: p 82]
   """
   "*** YOUR CODE HERE ***"
-  return graphSearchWithoutCosts(problem, util.Queue())
+  print("Start:", problem.getStartState())
+  print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+  print("Start's successors:", problem.getSuccessors(problem.getStartState()))
 
+  explored = []
+  fringe = util.Queue() #define the fringe as a Stack. You can check util.py
+  fringe.push([(problem.getStartState(), "Stop", 0)]) # adding the first node into the fringe
+  #please note that each node is represented using the path from the starting node to the it
+  while not fringe.isEmpty():
+      # print ("fringe: ", fringe.heap)
+      path = fringe.pop() # pop a node from the fringe
+      # print "path len: ", len(path)
+      # print "path: ", path
+      #print(path)
+      s = path[len(path) - 1]
+      s = s[0]
+      # print "s: ", s
+      if problem.isGoalState(s):
+          # print "FOUND SOLUTION: ", [x[1] for x in path]
+          #print("Found Sol", [x[1] for x in path][1:])
+          return [x[1] for x in path][1:]
+
+      if s not in explored:
+          explored.append(s) # append the state to explored
+          # print "EXPLORING: ", s
+
+          for successor in problem.getSuccessors(s):
+              print(successor)
+              # print "SUCCESSOR: ", successor
+              if successor[0] not in explored:
+                  successorPath = path[:]
+                  successorPath.append(successor)
+                  # print "successorPath: ", successorPath
+                  fringe.push(successorPath) # push the sucessorPath into fringe
+          # else:
+          # print successor[0], " IS ALREADY EXPLORED!!"
+
+  return []
+
+  util.raiseNotDefined()
       
 def uniformCostSearch(problem):
   "Search the node of least total cost first. "
   "*** YOUR CODE HERE ***"
+  vis = []
+  fringe = util.PriorityQueue()
+  fringe.push([(problem.getStartState(), "Stop", 0)], 0)
+  while not fringe.isEmpty():
+      path = fringe.pop()
+      state = path[len(path) - 1]
+      s = state[0]
+      cost = state[2]
+      if problem.isGoalState(s):
+          return [x[1] for x in path][1:]
+      if s not in vis:
+          vis.append(s)
+          for successor in problem.getSuccessors(s):
+              tmp_path = path[:]
+              tmp_successor =(successor[0], successor[1], successor[2] + 1)
+              tmp_path.append(tmp_successor)
+              fringe.push(tmp_path, tmp_successor[2])
   util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
